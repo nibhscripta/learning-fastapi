@@ -24,8 +24,10 @@ class PostResponse(PostBase):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    
-class CreateUserResponse(BaseModel):
+ 
+ 
+#response sent when a particular user data is retrieved   
+class UserResponse(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
