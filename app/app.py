@@ -1,13 +1,27 @@
 from typing import Optional
-from fastapi import FastAPI, Response, status, HTTPException
-from fastapi.params import Body
+from fastapi import FastAPI, Response, status, HTTPException, Depends
 from pydantic import BaseModel
 from random import randrange
-import psycopg2
+import psycopg2, time
 from psycopg2.extras import RealDictCursor
+from sqlalchemy.orm import Session
+
+from . import models
+from .database import engine, SessionLocal
+
+
+models.Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 class Post(BaseModel):
@@ -17,18 +31,23 @@ class Post(BaseModel):
     rating: Optional[int] = None 
 
 
-try:
-    conn = psycopg2.connect(
-        host='localhost', 
-        database='dev', 
-        user='dev', 
-        password='dev',
-        cursor_factory=RealDictCursor
-        )
-    cursor = conn.cursor()
-    print('connected to db')
-except Exception as error:
-    print(f'Failed to conect to db. The error was: {error}')
+#these aren't real credentials
+while True:
+    try:
+        conn = psycopg2.connect(
+            host='localhost', 
+            database='dev', 
+            user='dev', 
+            password='dev',
+            cursor_factory=RealDictCursor
+            )
+        cursor = conn.cursor()
+        print('connected to db')
+        break
+    except Exception as error:
+        print(f'Failed to conect to db. The error was: {error}')
+        time.sleep(2)
+
 
 my_posts = [
     {'title': 'the 1st post', 'content': 'the content of the 1st post', 'published': True, 'rating': 0, 'id': 1},
@@ -51,6 +70,11 @@ def find_index_post(id):
 @app.get("/")
 def root():
     return {"message": "Hello World"}
+
+
+@app.get("/sql")
+def test_posts(db: Session = Depends(get_db)):
+    return {'message': 'succes on db conn'}
 
 
 @app.get("/posts")
