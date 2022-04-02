@@ -3,10 +3,26 @@ from datetime import datetime
 from typing import Optional
 
 
+#response sent when a particular user data is retrieved   
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+        
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
 class PostBase(BaseModel):
     title: str
     content: str 
     published: bool = True
+    owner: UserResponse
 
     
 class PostCreate(PostBase):
@@ -24,21 +40,6 @@ class PostResponse(PostBase):
         
         
 class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
- 
- 
-#response sent when a particular user data is retrieved   
-class UserResponse(BaseModel):
-    id: int
-    email: EmailStr
-    created_at: datetime
-    
-    class Config:
-        orm_mode = True
-
-        
-class UserLogin(BaseModel):
     email: EmailStr
     password: str
     
